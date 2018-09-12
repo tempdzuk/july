@@ -1,5 +1,7 @@
 package com.test.julyOld.config;
-
+import com.recruiting.handler.SecuritySuccessHandler;
+import com.recruiting.service.entity.UserService;
+import com.recruiting.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
