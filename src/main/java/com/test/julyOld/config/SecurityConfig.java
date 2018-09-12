@@ -1,7 +1,9 @@
 package com.test.julyOld.config;
-import com.recruiting.handler.SecuritySuccessHandler;
-import com.recruiting.service.entity.UserService;
-import com.recruiting.utils.Constants;
+
+
+import com.test.julyOld.handler.SecuritySuccessHandler;
+import com.test.julyOld.service.UserService;
+import com.test.julyOld.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +17,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -35,7 +36,7 @@ import javax.sql.DataSource;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    @Qualifier("userService")
+//    @Qualifier("userService")
     UserService userService;
 
     @Autowired
