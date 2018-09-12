@@ -4,10 +4,11 @@ package com.test.julyOld.service;
 import com.test.julyOld.endpoint.model.UserDto;
 import com.test.julyOld.entity.User;
 import com.test.julyOld.service.model.UserCreationRequest;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserService extends UserDetailsService {
 
     User create(UserCreationRequest userCreationRequest);
 

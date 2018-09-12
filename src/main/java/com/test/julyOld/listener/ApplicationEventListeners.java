@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApplicationEventListeners {
 
-    private static boolean def = false;
+    private static boolean DATA_LOADED = false;
 
     @Value("${application.adminRole}")
     private String adminRoleName;
@@ -50,8 +50,10 @@ public class ApplicationEventListeners {
 
     @EventListener({ContextRefreshedEvent.class})
         public void onContextRefreshedEvent() {
+//            if(DATA_LOADED){
+//                return;
+//            }
             if (userRepository.findAll().size() == 0) {
-                System.out.println("mtav");
                 roleRepository.save(new Role(adminRoleName));
                 roleRepository.save(new Role(userRoleName));
                 final UserCreationRequest adminCreationRequest = new UserCreationRequest();
@@ -60,11 +62,6 @@ public class ApplicationEventListeners {
                 adminCreationRequest.setPassword(adminPassword);
                 adminCreationRequest.setRoleName(adminRoleName);
                 userService.create(adminCreationRequest);
-            }else {
-                System.out.println("CHmtav");
             }
         }
-
-//    @EventListener({ContextRefreshedEvent.class})
-
 }
