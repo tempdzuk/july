@@ -1,35 +1,20 @@
 package com.test.julyOld.endpoint;
 
 
-import com.recruiting.domain.PasswordResetToken;
-import com.recruiting.domain.User;
-import com.recruiting.handler.SecuritySuccessHandler;
-import com.recruiting.model.PasswordDTO;
-import com.recruiting.model.modelUtils.StringItemModel;
-import com.recruiting.service.email.EmailService;
-import com.recruiting.service.entity.UserService;
-import com.recruiting.utils.Constants;
+import com.test.julyOld.handler.SecuritySuccessHandler;
+import com.test.julyOld.service.UserService;
+import com.test.julyOld.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 
 /**
  * @author Marta Ginosyan
@@ -37,7 +22,7 @@ import java.util.Arrays;
 
 @Controller
 @RequestMapping(value = "")
-//@PreAuthorize("permitAll()")
+@PreAuthorize("permitAll()")
 public class AuthController {
 
     @Autowired
@@ -45,11 +30,6 @@ public class AuthController {
 
     @Autowired
     UserService userDetailsService;
-
-    @Qualifier("javaEmailService")
-    @Autowired
-    EmailService emailService;
-
 
     /**
      * Resolves authorization and redirects to eligible page. If user is not authorized navigates to home page.
@@ -93,81 +73,6 @@ public class AuthController {
         }
         request.logout();
         return "redirect:/login";
-    }
-
-    /**
-     * Initial navigation to recover password page from login page.
-     */
-    @RequestMapping(value = "/password-lost", method = RequestMethod.GET)
-    public String passwordLost(Model model) {
-        model.addAttribute("username", new StringItemModel());
-        return "password-lost";
-    }
-
-//    @RequestMapping(value = "/recover-password", method = RequestMethod.POST)
-//    public String recoverPassword(@ModelAttribute StringItemModel username, RedirectAttributes redirectAttributes) {
-//        User user = (User) userDetailsService.findUserByUsername(username.getType());
-//        if (user == null) {
-//            String messageValue = "No such user. Please register if you don't have an account";
-//            redirectAttributes.addFlashAttribute("error", messageValue);
-//            return "redirect:/registration";
-//        }
-//        PasswordResetToken passwordResetToken = emptyEntityCreationService.emptyPasswordResetToken();
-//        passwordResetToken.setUser(user);
-//        userDetailsService.savePasswordResetToken(passwordResetToken);
-//
-//        String name = null;
-//        name = (user).getName();
-//
-//        emailService.sendUserPasswordChange(username.getType(), name, passwordResetToken.getToken());
-//
-//        return "redirect:/login";
-//    }
-
-    @RequestMapping(value = "/change-password", method = RequestMethod.GET)
-    String changePassword(RedirectAttributes redirectAttributes, Model model, @RequestParam("token") String token) {
-        PasswordResetToken passwordResetToken = userDetailsService.getPasswordResetToken(token);
-        if (passwordResetToken == null) {
-            String message = "Invalid token.";
-            redirectAttributes.addFlashAttribute("error", message);
-            return "redirect:/login";
-        }
-
-        if (passwordResetToken.getExpiryDate()
-                .isBefore(LocalDateTime.now())) {
-            String messageValue = "Token expired.";
-            redirectAttributes.addFlashAttribute("error", messageValue);
-            return "redirect:/login";
-        }
-
-
-        User user = passwordResetToken.getUser();
-        Authentication auth = new UsernamePasswordAuthenticationToken(
-                user, null, Arrays.asList(
-                new SimpleGrantedAuthority("CHANGE_PASSWORD_PRIVILEGE")));
-        SecurityContextHolder.getContext()
-                .setAuthentication(auth);
-        model.addAttribute("passwordModel", new PasswordDTO());
-        return "update-password";
-    }
-
-    @RequestMapping(value = "/update-password", method = RequestMethod.POST)
-    public String updatePassword(@Validated @ModelAttribute PasswordDTO passwordDto) {
-        User user = (User) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-        user.setPassword(passwordDto.getNewPassword());
-        userDetailsService.save(user);
-        SecurityContextHolder.getContext()
-                .getAuthentication()
-                .setAuthenticated(false);
-        return "redirect:/";
-
-    }
-
-    @RequestMapping(value = "/under-construction")
-    public String underConstruction() {
-        return "under-construction-home";
     }
 
 }

@@ -12,13 +12,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     boolean existsById(Long id);
 
-    boolean existsByProject_Id(Long id);
-
-    boolean existsByUser_Id(Long id);
-
     List<Task> findAll();
-
-    List<Task> findAllByProject_Id(Long projectId);
 
     List<Task> findAllByUser_Id(Long id);
 

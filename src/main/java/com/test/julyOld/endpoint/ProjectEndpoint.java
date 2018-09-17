@@ -25,27 +25,27 @@ public class ProjectEndpoint {
     @Autowired
     private ProjectConverter projectConverter;
 
-    @RequestMapping(method = RequestMethod.POST, value = "project/add")
+    @RequestMapping(method = RequestMethod.POST, value = "")
     public ProjectDto create(@RequestBody final ProjectDto projectDto){
-            final ProjectCreationRequest projectCreationRequest = projectConverter.convertDtoToRequest(projectDto);
-            final Project createdProject = projectService.create(projectCreationRequest);
-            return projectConverter.convertEntityToDto(createdProject);
+        final ProjectCreationRequest projectCreationRequest = projectConverter.convertDtoToRequest(projectDto);
+        final Project createdProject = projectService.create(projectCreationRequest);
+        return projectConverter.convertEntityToDto(createdProject);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "project/modify")
+    @RequestMapping(method = RequestMethod.PUT, value = "")
     public ProjectDto update(@RequestBody final ProjectDto projectDto){
         final Project updatedProject = projectService.update(projectDto);
         return projectConverter.convertEntityToDto(updatedProject);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "project/get/{name}")
-    public ProjectDto getProjectByName(@PathVariable String name){
-        final Project receivedProject = projectService.getProjectByName(name);
+    @RequestMapping(method = RequestMethod.GET, value = "{id}")
+    public ProjectDto get(@PathVariable Long id){
+        final Project receivedProject = projectService.getById(id);
         return projectConverter.convertEntityToDto(receivedProject);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "")
-    public List<ProjectDto> getAllProject(){
+    public List<ProjectDto> getAll(){
         final List<Project> receivedProjects = projectService.findAll();
         return projectConverter.convertEntityToDtoList(receivedProjects);
     }

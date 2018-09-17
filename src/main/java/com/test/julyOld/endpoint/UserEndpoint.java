@@ -22,33 +22,27 @@ public class UserEndpoint {
     private UserServiceImpl userService;
 
     @RequestMapping(method = RequestMethod.GET, value = "")
-    public List<UserDto> getAllUsers(){
-        final List<User> users = userService.findAll();
+    public List<UserDto> getAll(){
+        final List<User> users = userService.getAll();
         return userConverter.convertEntityToDtoList(users);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/byRole/{roleName}")
-    public List<UserDto> getAllUsersByRoleName(@PathVariable final String roleName){
-        final List<User> users = userService.getUsersByRole(roleName);
-        return userConverter.convertEntityToDtoList(users);
-    }
-
-    @RequestMapping(method = RequestMethod.POST, value = "/add")
+    @RequestMapping(method = RequestMethod.POST, value = "")
     public UserDto create(@RequestBody final UserDto userDto){
         final UserCreationRequest userCreationRequest = userConverter.convertDtoToRequest(userDto);
         final User createdUser = userService.create(userCreationRequest);
         return userConverter.convertEntityToDto(createdUser);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/modify")
+    @RequestMapping(method = RequestMethod.PUT, value = "")
     public UserDto update(@RequestBody final UserDto userDto){
         final User updatedUser = userService.update(userDto);
         return userConverter.convertEntityToDto(updatedUser);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/{userName}")
-    public UserDto getUserByUserName(@PathVariable final String userName){
-        final User user = userService.getUserByUserName(userName);
+    public UserDto getByUserName(@PathVariable final String userName){
+        final User user = userService.getByUserName(userName);
         return userConverter.convertEntityToDto(user);
     }
 

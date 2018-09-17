@@ -15,7 +15,6 @@ public class TaskDto {
     @NotNull
     private Long projectId;
 
-//    @NotNull
     private Long userId;
 
     public Long getId() {

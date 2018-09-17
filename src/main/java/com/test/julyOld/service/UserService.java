@@ -14,12 +14,12 @@ public interface UserService extends UserDetailsService {
 
     User update(UserDto userDto);
 
-    User getUserById(Long id);
+    User getById(Long id);
 
-    User getUserByUserName(String userName);
+    User getByUserName(String userName);
 
-    List<User> getUsersByRole(String roleName);
+    List<User> getAll();
 
-    List<User> findAll();
+    boolean exists(Long id);
 
 }

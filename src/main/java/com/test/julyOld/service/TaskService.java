@@ -14,9 +14,9 @@ public interface TaskService {
 
     Task update(TaskDto taskDto);
 
-    List<Task> getAllTasks();
-
-    List<Task> getAllTasksWithinProject(Long projectId);
+    List<Task> getAll();
 
     Map<String, List<Task>> getAllTasksByUser(Long userId);
+
+    Task getById(Long id);
 }

@@ -2,6 +2,7 @@ package com.test.julyOld.endpoint.component;
 
 
 import com.test.julyOld.endpoint.model.ProjectDto;
+import com.test.julyOld.endpoint.model.TaskDto;
 import com.test.julyOld.entity.Project;
 import com.test.julyOld.repository.ProjectRepository;
 import com.test.julyOld.service.model.ProjectCreationRequest;
@@ -10,32 +11,40 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class ProjectConverter {
 
+    @Autowired
+    private TaskConverter taskConverter;
+
     public ProjectCreationRequest convertDtoToRequest(final ProjectDto projectDto){
-        String projectName = projectDto.getName();
-        String projectDescription = projectDto.getDescription();
-        ProjectCreationRequest projectCreationRequest = new ProjectCreationRequest();
-        projectCreationRequest.setName(projectName);
-        projectCreationRequest.setDescription(projectDescription);
+        final String name = projectDto.getName();
+        final String description = projectDto.getDescription();
+        final ProjectCreationRequest projectCreationRequest = new ProjectCreationRequest();
+
+        projectCreationRequest.setName(name);
+        projectCreationRequest.setDescription(description);
         return projectCreationRequest;
     }
 
     public ProjectDto convertEntityToDto(final Project project){
-        String projectName = project.getName();
-        String projectDescription = project.getDescription();
-        Long projectId = project.getId();
-        ProjectDto projectDto = new ProjectDto();
-        projectDto.setId(projectId);
-        projectDto.setName(projectName);
-        projectDto.setDescription(projectDescription);
+        final String name = project.getName();
+        final String description = project.getDescription();
+        final Long id = project.getId();
+        final Set<TaskDto> tasks = taskConverter.convertEntityToDtoSet(project.getTasks());
+        final ProjectDto projectDto = new ProjectDto();
+
+        projectDto.setId(id);
+        projectDto.setName(name);
+        projectDto.setDescription(description);
+        projectDto.setTasks(tasks);
         return projectDto;
     }
 
     public List<ProjectDto> convertEntityToDtoList(final List<Project> projects){
-        List<ProjectDto> projectDtoList = new ArrayList<>();
+        final List<ProjectDto> projectDtoList = new ArrayList<>();
         for (Project project: projects) {
             projectDtoList.add(convertEntityToDto(project));
         }

@@ -1,7 +1,5 @@
 package com.test.julyOld.endpoint.model;
 
-import com.test.julyOld.entity.Role;
-
 import javax.validation.constraints.NotNull;
 
 public class UserDto {

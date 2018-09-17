@@ -50,10 +50,10 @@ public class ApplicationEventListeners {
 
     @EventListener({ContextRefreshedEvent.class})
         public void onContextRefreshedEvent() {
-//            if(DATA_LOADED){
-//                return;
-//            }
-            if (userRepository.findAll().size() == 0) {
+            if(DATA_LOADED){
+                return;
+            }
+//            if (userRepository.findAll().size() == 0) {
                 roleRepository.save(new Role(adminRoleName));
                 roleRepository.save(new Role(userRoleName));
                 final UserCreationRequest adminCreationRequest = new UserCreationRequest();
@@ -62,6 +62,6 @@ public class ApplicationEventListeners {
                 adminCreationRequest.setPassword(adminPassword);
                 adminCreationRequest.setRoleName(adminRoleName);
                 userService.create(adminCreationRequest);
-            }
+//            }
         }
 }

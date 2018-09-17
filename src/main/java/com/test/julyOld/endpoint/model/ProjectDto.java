@@ -2,6 +2,7 @@ package com.test.julyOld.endpoint.model;
 
 
 import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 public class ProjectDto {
 
@@ -12,6 +13,8 @@ public class ProjectDto {
 
     @NotNull
     private String description;
+
+    private Set<TaskDto> tasks;
 
     public Long getId() {
         return id;
@@ -37,10 +40,12 @@ public class ProjectDto {
         this.description = description;
     }
 
+    public Set<TaskDto> getTasks() {
+        return tasks;
+    }
 
-    @Override
-    public String toString() {
-        return "DTO: name-" + this.name + " description-" + this.description;
+    public void setTasks(Set<TaskDto> tasks) {
+        this.tasks = tasks;
     }
 
 }

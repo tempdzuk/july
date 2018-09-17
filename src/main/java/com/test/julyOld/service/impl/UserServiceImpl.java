@@ -8,6 +8,8 @@ import com.test.julyOld.service.UserService;
 import com.test.julyOld.service.exception.EntityNotFoundException;
 import com.test.julyOld.service.model.UserCreationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,8 +20,6 @@ import static org.springframework.util.Assert.notNull;
 @Service
 public class UserServiceImpl implements UserService {
 
-    public static boolean defaultsAreSet = false;
-
     @Autowired
     private UserRepository userRepository;
 
@@ -27,11 +27,8 @@ public class UserServiceImpl implements UserService {
     private RoleServiceImpl roleService;
 
     @Override
-    public List<User> getUsersByRole(String roleName) {
-        notEmpty(roleName, "role name can not be empty");
-        final Role role = roleService.getRoleByName(roleName);
-        final List<User> users = userRepository.findAllByRole(role);
-        return users;
+    public boolean exists(Long id) {
+        return userRepository.existsById(id);
     }
 
     @Override
@@ -41,11 +38,8 @@ public class UserServiceImpl implements UserService {
         final String userName = userCreationRequest.getUserName();
         final String password = userCreationRequest.getPassword();
         final String roleName = userCreationRequest.getRoleName();
+        validate(name, userName, password, roleName);
 
-        notEmpty(name, "name can not be empty");
-        notEmpty(userName, "userName can not be empty");
-        notEmpty(password, "password can not be empty");
-        notEmpty(roleName, "role name can not be empty");
         final Role role = roleService.getRoleByName(roleName);
         final User newUser = new User(role);
         newUser.setName(name);
@@ -57,43 +51,57 @@ public class UserServiceImpl implements UserService {
     @Override
     public User update(UserDto userDto) {
         notNull(userDto, "userDto can not be null");
-        Long userId = userDto.getId();
-        notNull(userId, "user id can not be null");
-        if (userRepository.findById(userId).isPresent()){
-            String name = userDto.getName();
-            String userName = userDto.getUserName();
-            String password = userDto.getPassword();
-            notEmpty(name, "can not be empty");
-            notEmpty(userName, "user name can not be empty");
-            notEmpty(password, "password can not be empty");
-            User user = userRepository.findById(userId).get();
-            user.setName(name);
-            user.setUserName(userName);
-            user.setPassword(password);
-            return userRepository.save(user);
-        }else throw new EntityNotFoundException();
+        final Long id = userDto.getId();
+        final User existingUser = getById(id);
+
+        final String name = userDto.getName();
+        final String userName = userDto.getUserName();
+        final String password = userDto.getPassword();
+        validate(name, userName, password);
+
+        existingUser.setName(name);
+        existingUser.setUserName(userName);
+        existingUser.setPassword(password);
+        return userRepository.save(existingUser);
     }
 
     @Override
-    public User getUserById(Long id) {
+    public User getById(Long id) {
         notNull(id, "user id can not be null");
-        if (userRepository.findById(id).isPresent()){
-            return userRepository.findById(id).get();
-        }else throw new EntityNotFoundException();
-    }
-
-    @Override
-    public User getUserByUserName(String userName) {
-        notEmpty(userName, "userName can not be empty");
-        if (!userRepository.existsByUserName(userName)) throw new EntityNotFoundException();
-        final User user = userRepository.findByUserName(userName);
+        final User user = userRepository.findById(id).orElse(null);
+        if (user == null) throw new EntityNotFoundException();
         return user;
     }
 
     @Override
-    public List<User> findAll() {
+    public User getByUserName(String userName) {
+        notEmpty(userName, "userName can not be empty");
+        if (!userRepository.existsByUserName(userName)) throw new EntityNotFoundException();
+        return userRepository.findByUserName(userName);
+    }
+
+    @Override
+    public List<User> getAll() {
         final List<User> users = userRepository.findAll();
         notEmpty(users, "users can not be empty");
         return users;
+    }
+
+    private void validate(String name, String userName, String password, String roleName){
+        notEmpty(name, "name can not be empty");
+        notEmpty(userName, "userName can not be empty");
+        notEmpty(password, "password can not be empty");
+        notEmpty(roleName, "role name can not be empty");
+    }
+
+    private void validate(String name, String userName, String password){
+        notEmpty(name, "name can not be empty");
+        notEmpty(userName, "userName can not be empty");
+        notEmpty(password, "password can not be empty");
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+        return null;
     }
 }

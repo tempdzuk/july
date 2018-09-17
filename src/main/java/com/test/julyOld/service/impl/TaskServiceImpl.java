@@ -28,81 +28,84 @@ public class TaskServiceImpl implements TaskService {
     private UserServiceImpl userService;
 
     @Override
+    public Task getById(Long id) {
+        notNull(id, "id can not be null");
+        final Task task = taskRepository.findById(id).orElse(null);
+        if (task == null) throw new EntityNotFoundException();
+        return task;
+    }
+
+    @Override
     public Task create(TaskCreationRequest taskCreationRequest) {
         notNull(taskCreationRequest, "taskCreationRequest can not be null");
         final String story = taskCreationRequest.getStory();
         final String description = taskCreationRequest.getDescription();
         final Long userId = taskCreationRequest.getUserId();
         final Long projectId = taskCreationRequest.getProjectId();
-        notEmpty(story, "task story can not be empty");
-        notEmpty(description, "task description can not be empty");
-        notNull(projectId, "project id can not be null");
-        final Task task = new Task();
-        final Project project = projectService.getProjectById(projectId);
-        task.setStory(story);
-        task.setDescription(description);
-        task.setProject(project);
+        validate(story, description, projectId);
+
+        final Project project = projectService.getById(projectId);
+        final Task newTask = new Task();
+        newTask.setStory(story);
+        newTask.setDescription(description);
+        newTask.setProject(project);
         if (userId != null){
-            task.setUser(userService.getUserById(userId));
+            newTask.setUser(userService.getById(userId));
         }
-        return taskRepository.save(task);
+        return taskRepository.save(newTask);
     }
 
     @Override
     public Task update(TaskDto taskDto) {
         notNull(taskDto, "taskDto can not be null");
-        final Long taskId = taskDto.getId();
-        notNull(taskId, "taskDto can not be null");
-        if (taskRepository.findById(taskId).isPresent()){
-            final Task task = taskRepository.findById(taskId).get();
-            final String story = taskDto.getStory();
-            final String description = taskDto.getDescription();
-            final Long projectId = taskDto.getProjectId();
-            final Long userId = taskDto.getUserId();
-            if (!story.isEmpty()) task.setStory(story);
-            if (!description.isEmpty()) task.setDescription(description);
-            if (projectId != null) task.setProject(projectService.getProjectById(projectId));
-            if (userId != null) task.setUser(userService.getUserById(userId));
-            return taskRepository.save(task);
-        }else throw new EntityNotFoundException();
+        final Long id = taskDto.getId();
+        final Task existingTask = getById(id);
+
+        final String story = taskDto.getStory();
+        final String description = taskDto.getDescription();
+        final Long projectId = taskDto.getProjectId();
+        final Long userId = taskDto.getUserId();
+        if (!story.isEmpty()) existingTask.setStory(story);
+        if (!description.isEmpty()) existingTask.setDescription(description);
+        if (projectId != null) existingTask.setProject(projectService.getById(projectId));
+        if (userId != null) existingTask.setUser(userService.getById(userId));
+
+        return taskRepository.save(existingTask);
     }
 
     @Override
-    public List<Task> getAllTasks() {
-        List<Task> tasks = taskRepository.findAll();
-        notEmpty(tasks, "Tasks are empty");
-        return tasks;
-    }
-
-    @Override
-    public List<Task> getAllTasksWithinProject(Long projectId) {
-        notNull(projectId, "project id can not be null");
-        if (taskRepository.existsByProject_Id(projectId)) return taskRepository.findAllByProject_Id(projectId);
-        throw new EntityNotFoundException();
+    public List<Task> getAll() {
+        return taskRepository.findAll();
     }
 
     @Override
     public Map<String, List<Task>> getAllTasksByUser(Long userId) {
         notNull(userId, "user id can not be null");
-        if (taskRepository.existsByUser_Id(userId)){
-            List<Task> tasks = taskRepository.findAllByUser_Id(userId);
-            Set<Project> projects = new HashSet<>();
-            for (Task task:tasks) {
-                projects.add(task.getProject());
-            }
-            Map<String, List<Task>> tasksByProject = new HashMap<>();
-            for (Project project:projects) {
-                ArrayList<Task> tempTasks = new ArrayList<>();
-                String projectName = project.getName();
-                for (Task t:tasks) {
-                    if (t.getProject().getId().equals(project.getId())){
-                        tempTasks.add(t);
-                    }
-                }
-                tasksByProject.put(projectName, tempTasks);
-            }
-            return tasksByProject;
+
+        if (!userService.exists(userId)) throw new EntityNotFoundException();
+
+        final List<Task> tasks = taskRepository.findAllByUser_Id(userId);
+        final Set<Project> projects = new HashSet<>();
+        for (Task task:tasks) {
+            projects.add(task.getProject());
         }
-        throw new EntityNotFoundException();
+        final Map<String, List<Task>> tasksByProject = new HashMap<>();
+        for (Project project:projects) {
+            ArrayList<Task> tempTasks = new ArrayList<>();
+            String projectName = project.getName();
+            for (Task t:tasks) {
+                if (t.getProject().getId().equals(project.getId())){
+                    tempTasks.add(t);
+                }
+            }
+            tasksByProject.put(projectName, tempTasks);
+        }
+        return tasksByProject;
+    }
+
+    private void validate(String story, String description, Long projectId){
+        notEmpty(story, "task story can not be empty");
+        notEmpty(description, "task description can not be empty");
+        notNull(projectId, "project id can not be null");
     }
 }

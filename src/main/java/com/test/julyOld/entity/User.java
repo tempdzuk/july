@@ -1,5 +1,9 @@
 package com.test.julyOld.entity;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import javax.persistence.*;
 
 @Entity
@@ -75,5 +79,40 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+
+        if (!(o instanceof User)) return false;
+
+        final User other = (User) o;
+
+        return new EqualsBuilder()
+                .append(id, other.id)
+                .append(name, other.name)
+                .append(userName, other.userName)
+                .append(password, other.password)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17,37)
+                .append(id)
+                .append(name)
+                .append(userName)
+                .append(password)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("name", name)
+                .append("userName", userName)
+                .toString();
     }
 }

@@ -9,7 +9,6 @@ import com.test.julyOld.service.model.TaskCreationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,30 +24,24 @@ public class TaskEndpoint {
 
     @RequestMapping(method = RequestMethod.GET, value = "")
     public List<TaskDto> getAllTasks(){
-        final List<Task> tasks = taskService.getAllTasks();
+        final List<Task> tasks = taskService.getAll();
         return taskConverter.convertEntityToDtoList(tasks);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/add")
+    @RequestMapping(method = RequestMethod.POST, value = "")
     public TaskDto create(@RequestBody final TaskDto taskDto){
         final TaskCreationRequest taskCreationRequest = taskConverter.convertDtoToRequest(taskDto);
         final Task createdTask = taskService.create(taskCreationRequest);
         return taskConverter.convertEntityToDto(createdTask);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/modify")
+    @RequestMapping(method = RequestMethod.PUT, value = "")
     public TaskDto update(@RequestBody final TaskDto taskDto){
         final Task updatedTask = taskService.update(taskDto);
         return taskConverter.convertEntityToDto(updatedTask);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/byproject/{projectId}")
-    public List<TaskDto> getAllTasksByProject(@PathVariable final Long projectId){
-        final List<Task> tasks = taskService.getAllTasksWithinProject(projectId);
-        return taskConverter.convertEntityToDtoList(tasks);
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/byuser/{userId}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{userId}")
     public Map<String, List<TaskDto>> getAllTasksByUser(@PathVariable final Long userId){
         final Map<String, List<Task>> tasks = taskService.getAllTasksByUser(userId);
         return taskConverter.convertEntityToDtoMap(tasks);

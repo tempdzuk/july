@@ -10,20 +10,20 @@ import java.util.List;
 @Component
 public class RoleConverter {
 
-    public List<RoleDto> convertEntityToDtoList(final List<Role> projects){
-        List<RoleDto> projectDtoList = new ArrayList<>();
-        for (Role role: projects) {
-            projectDtoList.add(convertEntityToDto(role));
+    public List<RoleDto> convertEntityToDtoList(final List<Role> roles){
+        final List<RoleDto> roleDtoList = new ArrayList<>();
+        for (Role role: roles) {
+            roleDtoList.add(convertEntityToDto(role));
         }
-        return projectDtoList;
+        return roleDtoList;
     }
 
     public RoleDto convertEntityToDto(final Role role){
-        String roleName = role.getRoleName();
-        Long roleId = role.getId();
+        final String name = role.getRoleName();
+        final Long id = role.getId();
         RoleDto roleDto = new RoleDto();
-        roleDto.setId(roleId);
-        roleDto.setRoleName(roleName);
+        roleDto.setId(id);
+        roleDto.setRoleName(name);
         return roleDto;
     }
 }

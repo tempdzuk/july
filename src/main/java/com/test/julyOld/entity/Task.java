@@ -1,5 +1,9 @@
 package com.test.julyOld.entity;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 import javax.persistence.*;
 
 @Entity
@@ -17,12 +21,12 @@ public class Task {
     @Column(name = "description")
     private String description;
 
-    private boolean completed = false;
-
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "project_task_fk"))
     private Project project;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @ManyToOne
+    @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "user_task_fk"))
     private User user;
 
     public Task() {
@@ -59,14 +63,6 @@ public class Task {
         this.description = description;
     }
 
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
-    }
-
     public Project getProject() {
         return project;
     }
@@ -81,5 +77,38 @@ public class Task {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+
+        if (!(o instanceof Task)) return false;
+
+        final Task other = (Task) o;
+
+        return new EqualsBuilder()
+                .append(id, other.id)
+                .append(story, other.story)
+                .append(description, other.description)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(story)
+                .append(description)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("id", id)
+                .append("story", story)
+                .append("description", description)
+                .toString();
     }
 }

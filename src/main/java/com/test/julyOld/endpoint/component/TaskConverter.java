@@ -11,46 +11,60 @@ import java.util.*;
 public class TaskConverter {
 
     public TaskCreationRequest convertDtoToRequest(final TaskDto taskDto){
-        String story = taskDto.getStory();
-        String description = taskDto.getDescription();
-        Long projectId = taskDto.getProjectId();
-        Long userId = taskDto.getUserId();
-        TaskCreationRequest taskCreationRequest = new TaskCreationRequest();
+        final String story = taskDto.getStory();
+        final String description = taskDto.getDescription();
+        final Long projectId = taskDto.getProjectId();
+        final Long userId = taskDto.getUserId();
+
+        final TaskCreationRequest taskCreationRequest = new TaskCreationRequest();
         taskCreationRequest.setStory(story);
         taskCreationRequest.setDescription(description);
         taskCreationRequest.setProjectId(projectId);
         taskCreationRequest.setUserId(userId);
+
         return taskCreationRequest;
     }
 
     public TaskDto convertEntityToDto(Task task){
-        Long taskId = task.getId();
-        Long projectId = task.getProject().getId();
-        String story = task.getStory();
-        String description = task.getDescription();
-        TaskDto taskDto = new TaskDto();
-        taskDto.setId(taskId);
+        final Long id = task.getId();
+        final Long projectId = task.getProject().getId();
+        final String story = task.getStory();
+        final String description = task.getDescription();
+        final TaskDto taskDto = new TaskDto();
+
+        taskDto.setId(id);
         taskDto.setProjectId(projectId);
-        if (task.getUser() != null) {
-            Long userId = task.getUser().getId();
-            taskDto.setUserId(userId);
-        }
         taskDto.setStory(story);
         taskDto.setDescription(description);
+        if (task.getUser() != null) {
+            final Long userId = task.getUser().getId();
+            taskDto.setUserId(userId);
+        }
+
         return taskDto;
     }
 
     public List<TaskDto> convertEntityToDtoList(List<Task> tasks){
-        List<TaskDto> taskDtoList = new ArrayList<>();
+        final List<TaskDto> taskDtoList = new ArrayList<>();
         for (Task task:tasks) {
             taskDtoList.add(convertEntityToDto(task));
         }
         return taskDtoList;
     }
 
+    public Set<TaskDto> convertEntityToDtoSet(Set<Task> tasks){
+        Set<TaskDto> taskDtoSet = new HashSet<>();
+        if (tasks != null) {
+            for (Task task : tasks) {
+                taskDtoSet.add(convertEntityToDto(task));
+            }
+        }
+        return taskDtoSet;
+    }
+
     public Map<String, List<TaskDto>> convertEntityToDtoMap(Map<String, List<Task>> tasks){
-        Map<String, List<TaskDto>> taskDtoMap = new HashMap<>();
-        Set<String> iterator = tasks.keySet();
+        final Map<String, List<TaskDto>> taskDtoMap = new HashMap<>();
+        final Set<String> iterator = tasks.keySet();
         for (String key:iterator) {
             taskDtoMap.put(key, convertEntityToDtoList(tasks.get(key)));
         }

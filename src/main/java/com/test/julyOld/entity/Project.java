@@ -6,6 +6,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "project")
@@ -21,6 +22,9 @@ public class Project {
 
     @Column(name = "description")
     private String description;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Task> tasks;
 
     public Long getId() {
         return id;
@@ -46,13 +50,19 @@ public class Project {
         this.description = description;
     }
 
+    public Set<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(Set<Task> tasks) {
+        this.tasks = tasks;
+    }
+
     @Override
     public boolean equals(Object o) {
-
         if (o == this) return true;
-        if (!(o instanceof Project)) {
-            return false;
-        }
+
+        if (!(o instanceof Project)) return false;
 
         final Project other = (Project) o;
 

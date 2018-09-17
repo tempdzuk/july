@@ -12,11 +12,11 @@ import java.util.List;
 public class UserConverter {
 
     public UserCreationRequest convertDtoToRequest(final UserDto userDto){
-        String name = userDto.getName();
-        String userName = userDto.getUserName();
-        String password = userDto.getPassword();
-        String roleName = userDto.getRoleName();
-        UserCreationRequest userCreationRequest = new UserCreationRequest();
+        final String name = userDto.getName();
+        final String userName = userDto.getUserName();
+        final String password = userDto.getPassword();
+        final String roleName = userDto.getRoleName();
+        final UserCreationRequest userCreationRequest = new UserCreationRequest();
         userCreationRequest.setName(name);
         userCreationRequest.setUserName(userName);
         userCreationRequest.setPassword(password);
@@ -25,12 +25,12 @@ public class UserConverter {
     }
 
     public UserDto convertEntityToDto(final User user){
-        Long id = user.getId();
-        String name = user.getName();
-        String userName = user.getUserName();
-        String password = user.getPassword();
-        String roleName = user.getRole().getRoleName();
-        UserDto userDto = new UserDto();
+        final Long id = user.getId();
+        final String name = user.getName();
+        final String userName = user.getUserName();
+        final String password = user.getPassword();
+        final String roleName = user.getRole().getRoleName();
+        final UserDto userDto = new UserDto();
         userDto.setId(id);
         userDto.setName(name);
         userDto.setUserName(userName);
@@ -40,7 +40,7 @@ public class UserConverter {
     }
 
     public List<UserDto> convertEntityToDtoList(final List<User> users){
-        List<UserDto> userDtoList = new ArrayList<>();
+        final List<UserDto> userDtoList = new ArrayList<>();
         for (User user: users) {
             userDtoList.add(convertEntityToDto(user));
         }
