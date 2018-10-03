@@ -1,17 +1,16 @@
 package com.test.julyOld.service.impl;
 
-import com.test.julyOld.endpoint.model.TaskDto;
 import com.test.julyOld.entity.Project;
 import com.test.julyOld.entity.Task;
 import com.test.julyOld.repository.TaskRepository;
 import com.test.julyOld.service.TaskService;
 import com.test.julyOld.service.exception.EntityNotFoundException;
-import com.test.julyOld.service.model.TaskCreationRequest;
+import com.test.julyOld.service.exception.NotAuthorizedUserException;
+import com.test.julyOld.service.model.taskRequests.TaskCreationRequest;
+import com.test.julyOld.service.model.taskRequests.TaskModificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-
 import static org.apache.commons.lang.Validate.notEmpty;
 import static org.springframework.util.Assert.notNull;
 
@@ -28,7 +27,7 @@ public class TaskServiceImpl implements TaskService {
     private UserServiceImpl userService;
 
     @Override
-    public Task getById(Long id) {
+    public Task get(String id) {
         notNull(id, "id can not be null");
         final Task task = taskRepository.findById(id).orElse(null);
         if (task == null) throw new EntityNotFoundException();
@@ -37,54 +36,71 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task create(TaskCreationRequest taskCreationRequest) {
-        notNull(taskCreationRequest, "taskCreationRequest can not be null");
+        notNull(taskCreationRequest, "task creation request can not be null");
         final String story = taskCreationRequest.getStory();
         final String description = taskCreationRequest.getDescription();
-        final Long userId = taskCreationRequest.getUserId();
-        final Long projectId = taskCreationRequest.getProjectId();
+        final String userId = taskCreationRequest.getUserId();
+        final String projectId = taskCreationRequest.getProjectId();
         validate(story, description, projectId);
 
-        final Project project = projectService.getById(projectId);
+        final Project project = projectService.get(projectId);
         final Task newTask = new Task();
         newTask.setStory(story);
         newTask.setDescription(description);
         newTask.setProject(project);
         if (userId != null){
-            newTask.setUser(userService.getById(userId));
+            newTask.setUser(userService.get(userId));
         }
         return taskRepository.save(newTask);
     }
 
     @Override
-    public Task update(TaskDto taskDto) {
-        notNull(taskDto, "taskDto can not be null");
-        final Long id = taskDto.getId();
-        final Task existingTask = getById(id);
+    public Task updateByAdmin(TaskModificationRequest taskModificationRequest) {
+        final Task existingTask = updateDefault(taskModificationRequest);
 
-        final String story = taskDto.getStory();
-        final String description = taskDto.getDescription();
-        final Long projectId = taskDto.getProjectId();
-        final Long userId = taskDto.getUserId();
-        if (!story.isEmpty()) existingTask.setStory(story);
-        if (!description.isEmpty()) existingTask.setDescription(description);
-        if (projectId != null) existingTask.setProject(projectService.getById(projectId));
-        if (userId != null) existingTask.setUser(userService.getById(userId));
-
+        final String projectId = taskModificationRequest.getProjectId();
+        if (!projectId.isEmpty()) existingTask.setProject(projectService.get(projectId));
         return taskRepository.save(existingTask);
     }
 
     @Override
-    public List<Task> getAll() {
-        return taskRepository.findAll();
+    public Task update(TaskModificationRequest taskModificationRequest, String userId) {
+        notEmpty(userId, "id can not be empty");
+        final String userIdOfExistingTask = get(taskModificationRequest.getId()).getUser().getId();
+        if (!userId.equals(userIdOfExistingTask)) throw new NotAuthorizedUserException("Current user doesn't have authorisation for updating this task");
+        return taskRepository.save(updateDefault(taskModificationRequest));
+    }
+
+    private Task updateDefault(TaskModificationRequest taskModificationRequest){
+        notNull(taskModificationRequest, "task modification request can not be null");
+        final String id = taskModificationRequest.getId();
+        notEmpty(id, "id can not be empty");
+        final Task existingTask = get(id);
+
+        final String story = taskModificationRequest.getStory();
+        final String description = taskModificationRequest.getDescription();
+        final String userId = taskModificationRequest.getUserId();
+        if (!story.isEmpty()) existingTask.setStory(story);
+        if (!description.isEmpty()) existingTask.setDescription(description);
+        if (!userId.isEmpty()) existingTask.setUser(userService.get(userId));
+        return existingTask;
     }
 
     @Override
-    public Map<String, List<Task>> getAllTasksByUser(Long userId) {
-        notNull(userId, "user id can not be null");
+    public Map<String, List<Task>> getAll() {
+        final List<Task> tasks = taskRepository.findAll();
+        return mappingTasks(tasks);
+    }
 
-        if (!userService.exists(userId)) throw new EntityNotFoundException();
+    @Override
+    public Map<String, List<Task>> getAllByUser(String userId) {
+        notEmpty(userId, "user request id can not be null");
 
         final List<Task> tasks = taskRepository.findAllByUser_Id(userId);
+        return mappingTasks(tasks);
+    }
+
+    private Map<String, List<Task>> mappingTasks(List<Task> tasks){
         final Set<Project> projects = new HashSet<>();
         for (Task task:tasks) {
             projects.add(task.getProject());
@@ -103,9 +119,9 @@ public class TaskServiceImpl implements TaskService {
         return tasksByProject;
     }
 
-    private void validate(String story, String description, Long projectId){
+    private void validate(String story, String description, String projectId){
         notEmpty(story, "task story can not be empty");
         notEmpty(description, "task description can not be empty");
-        notNull(projectId, "project id can not be null");
+        notEmpty(projectId, "project id can not be empty");
     }
 }

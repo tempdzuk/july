@@ -1,29 +1,28 @@
 package com.test.julyOld.endpoint.component;
 
-import com.test.julyOld.endpoint.model.RoleDto;
+import com.test.julyOld.endpoint.model.RoleResponseDto;
 import com.test.julyOld.entity.Role;
 import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class RoleConverter {
 
-    public List<RoleDto> convertEntityToDtoList(final List<Role> roles){
-        final List<RoleDto> roleDtoList = new ArrayList<>();
+    public List<RoleResponseDto> convertEntityToDtoList(final List<Role> roles){
+        final List<RoleResponseDto> roleResponseDtoList = new ArrayList<>();
         for (Role role: roles) {
-            roleDtoList.add(convertEntityToDto(role));
+            roleResponseDtoList.add(convertEntityToDto(role));
         }
-        return roleDtoList;
+        return roleResponseDtoList;
     }
 
-    public RoleDto convertEntityToDto(final Role role){
-        final String name = role.getRoleName();
-        final Long id = role.getId();
-        RoleDto roleDto = new RoleDto();
-        roleDto.setId(id);
-        roleDto.setRoleName(name);
-        return roleDto;
+    private RoleResponseDto convertEntityToDto(final Role role){
+        final String name = role.getType().name();
+        final String id = role.getId();
+        RoleResponseDto roleResponseDto = new RoleResponseDto();
+        roleResponseDto.setId(id);
+        roleResponseDto.setRoleName(name);
+        return roleResponseDto;
     }
 }

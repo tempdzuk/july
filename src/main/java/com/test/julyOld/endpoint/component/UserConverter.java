@@ -1,49 +1,58 @@
 package com.test.julyOld.endpoint.component;
 
-import com.test.julyOld.endpoint.model.UserDto;
+import com.test.julyOld.endpoint.model.user.UserCreationDto;
+import com.test.julyOld.endpoint.model.user.UserModificationDto;
+import com.test.julyOld.endpoint.model.user.UserResponseDto;
 import com.test.julyOld.entity.User;
-import com.test.julyOld.service.model.UserCreationRequest;
+import com.test.julyOld.service.model.userRequsts.UserCreationRequest;
+import com.test.julyOld.service.model.userRequsts.UserModificationRequest;
 import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class UserConverter {
 
-    public UserCreationRequest convertDtoToRequest(final UserDto userDto){
-        final String name = userDto.getName();
-        final String userName = userDto.getUserName();
-        final String password = userDto.getPassword();
-        final String roleName = userDto.getRoleName();
+    public UserCreationRequest convertCreationDtoToRequest(final UserCreationDto userCreationDto){
+        final String name = userCreationDto.getName();
+        final String userName = userCreationDto.getUserName();
+        final String password = userCreationDto.getPassword();
+        final String roleId = userCreationDto.getRoleId();
         final UserCreationRequest userCreationRequest = new UserCreationRequest();
         userCreationRequest.setName(name);
         userCreationRequest.setUserName(userName);
         userCreationRequest.setPassword(password);
-        userCreationRequest.setRoleName(roleName);
+        userCreationRequest.setRoleId(roleId);
         return userCreationRequest;
     }
 
-    public UserDto convertEntityToDto(final User user){
-        final Long id = user.getId();
-        final String name = user.getName();
-        final String userName = user.getUserName();
-        final String password = user.getPassword();
-        final String roleName = user.getRole().getRoleName();
-        final UserDto userDto = new UserDto();
-        userDto.setId(id);
-        userDto.setName(name);
-        userDto.setUserName(userName);
-        userDto.setPassword(password);
-        userDto.setRoleName(roleName);
-        return userDto;
+    public UserModificationRequest convertModificationDtoToRequest(final UserModificationDto userModificationDto){
+        final String id = userModificationDto.getId();
+        final String name = userModificationDto.getName();
+        final String userName = userModificationDto.getUserName();
+        final String password = userModificationDto.getPassword();
+        final UserModificationRequest userModificationRequest = new UserModificationRequest();
+        userModificationRequest.setId(id);
+        userModificationRequest.setName(name);
+        userModificationRequest.setUserName(userName);
+        userModificationRequest.setPassword(password);
+        return userModificationRequest;
     }
 
-    public List<UserDto> convertEntityToDtoList(final List<User> users){
-        final List<UserDto> userDtoList = new ArrayList<>();
+    public UserResponseDto convertEntityToDto(final User user){
+        final String name = user.getName();
+        final String id = user.getId();
+        final UserResponseDto userResponseDto = new UserResponseDto();
+        userResponseDto.setName(name);
+        userResponseDto.setId(id);
+        return userResponseDto;
+    }
+
+    public List<UserResponseDto> convertEntityToDtoList(final List<User> users){
+        final List<UserResponseDto> userResponseDto = new ArrayList<>();
         for (User user: users) {
-            userDtoList.add(convertEntityToDto(user));
+            userResponseDto.add(convertEntityToDto(user));
         }
-        return userDtoList;
+        return userResponseDto;
     }
 }

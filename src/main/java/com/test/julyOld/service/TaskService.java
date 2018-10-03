@@ -1,10 +1,8 @@
 package com.test.julyOld.service;
 
-import com.test.julyOld.endpoint.model.TaskDto;
 import com.test.julyOld.entity.Task;
-import com.test.julyOld.service.model.TaskCreationRequest;
-
-import java.util.ArrayList;
+import com.test.julyOld.service.model.taskRequests.TaskCreationRequest;
+import com.test.julyOld.service.model.taskRequests.TaskModificationRequest;
 import java.util.List;
 import java.util.Map;
 
@@ -12,11 +10,13 @@ public interface TaskService {
 
     Task create(TaskCreationRequest taskCreationRequest);
 
-    Task update(TaskDto taskDto);
+    Task updateByAdmin(TaskModificationRequest taskModificationRequest);
 
-    List<Task> getAll();
+    Task update(TaskModificationRequest taskModificationRequest, String userId);
 
-    Map<String, List<Task>> getAllTasksByUser(Long userId);
+    Map<String, List<Task>> getAll();
 
-    Task getById(Long id);
+    Map<String, List<Task>> getAllByUser(String userId);
+
+    Task get(String id);
 }

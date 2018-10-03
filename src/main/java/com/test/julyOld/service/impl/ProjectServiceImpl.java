@@ -1,16 +1,14 @@
 package com.test.julyOld.service.impl;
 
-import com.test.julyOld.endpoint.model.ProjectDto;
 import com.test.julyOld.entity.Project;
 import com.test.julyOld.repository.ProjectRepository;
 import com.test.julyOld.service.exception.EntityNotFoundException;
-import com.test.julyOld.service.model.ProjectCreationRequest;
+import com.test.julyOld.service.model.projectRequsets.ProjectCreationRequest;
 import com.test.julyOld.service.ProjectService;
+import com.test.julyOld.service.model.projectRequsets.ProjectModificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-
 import static org.apache.commons.lang.Validate.notEmpty;
 import static org.springframework.util.Assert.notNull;
 
@@ -21,7 +19,7 @@ public class ProjectServiceImpl implements ProjectService {
     ProjectRepository projectRepository;
 
     public Project create(final ProjectCreationRequest projectCreationRequest) {
-        notNull(projectCreationRequest, "projectCreationRequest can not be null");
+        notNull(projectCreationRequest, "project creation request can not be null");
 
         final String name = projectCreationRequest.getName();
         final String description = projectCreationRequest.getDescription();
@@ -35,29 +33,28 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Project getById(Long id) {
-        notNull(id, "project id can not be null");
+    public Project get(String id) {
+        notEmpty(id, "Project id can not be empty");
         final Project project = projectRepository.findById(id).orElse(null);
         if (project == null) throw new EntityNotFoundException();
         return project;
     }
 
     @Override
-    public Project update(ProjectDto projectDto) {
-        notNull(projectDto, "projectDto can not be null");
-        final Long id = projectDto.getId();
-        notNull(id, "id can not be empty");
+    public Project update(ProjectModificationRequest projectModificationRequest) {
+        notNull(projectModificationRequest, "project modification request can not be null");
+        final String id = projectModificationRequest.getId();
+        notEmpty(id, "id can not be empty");
 
-        final Project existingProject = getById(id);
-        final String name = projectDto.getName();
-        final String description = projectDto.getDescription();
-        validate(name, description);
+        final Project existingProject = get(id);
 
-        existingProject.setName(name);
-        existingProject.setDescription(description);
+        final String name = projectModificationRequest.getName();
+        final String description = projectModificationRequest.getDescription();
+
+        if (!name.isEmpty()) existingProject.setName(name);
+        if (!description.isEmpty()) existingProject.setDescription(description);
         return projectRepository.save(existingProject);
     }
-
 
     @Override
     public List<Project> findAll() {

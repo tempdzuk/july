@@ -1,19 +1,22 @@
 package com.test.julyOld.service.impl;
 
-import com.test.julyOld.endpoint.model.UserDto;
+import com.test.julyOld.entity.APIUserDetail;
 import com.test.julyOld.entity.Role;
 import com.test.julyOld.entity.User;
+import com.test.julyOld.repository.APIUserDetailRepository;
 import com.test.julyOld.repository.UserRepository;
+import com.test.julyOld.service.RoleService;
 import com.test.julyOld.service.UserService;
 import com.test.julyOld.service.exception.EntityNotFoundException;
-import com.test.julyOld.service.model.UserCreationRequest;
+import com.test.julyOld.service.model.userRequsts.UserCreationRequest;
+import com.test.julyOld.service.model.userRequsts.UserModificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
 import static org.apache.commons.lang.Validate.notEmpty;
 import static org.springframework.util.Assert.notNull;
 
@@ -24,12 +27,10 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private RoleServiceImpl roleService;
+    private APIUserDetailRepository apiUserDetailRepository;
 
-    @Override
-    public boolean exists(Long id) {
-        return userRepository.existsById(id);
-    }
+    @Autowired
+    private RoleService roleService;
 
     @Override
     public User create(final UserCreationRequest userCreationRequest) {
@@ -37,47 +38,58 @@ public class UserServiceImpl implements UserService {
         final String name = userCreationRequest.getName();
         final String userName = userCreationRequest.getUserName();
         final String password = userCreationRequest.getPassword();
-        final String roleName = userCreationRequest.getRoleName();
-        validate(name, userName, password, roleName);
+        final String roleId = userCreationRequest.getRoleId();
+        validate(name, userName, password, roleId);
 
-        final Role role = roleService.getRoleByName(roleName);
-        final User newUser = new User(role);
+        final Role newRole = roleService.get(roleId);
+
+        Set<Role> rolesSet = new HashSet<>();
+        rolesSet.add(newRole);
+        User newUser = new User();
         newUser.setName(name);
-        newUser.setUserName(userName);
-        newUser.setPassword(password);
-        return userRepository.save(newUser);
+        newUser = userRepository.save(newUser);
+
+        final APIUserDetail apiUserDetail = new APIUserDetail();
+
+        apiUserDetail.setUsername(userName);
+        apiUserDetail.setPasswordHash(password);
+        apiUserDetail.setApproved(true);
+        apiUserDetail.setEnabled(true);
+        apiUserDetail.setRoles(rolesSet);
+        apiUserDetail.setUser(newUser);
+        apiUserDetailRepository.save(apiUserDetail);
+        return newUser;
     }
 
     @Override
-    public User update(UserDto userDto) {
-        notNull(userDto, "userDto can not be null");
-        final Long id = userDto.getId();
-        final User existingUser = getById(id);
+    public User update(UserModificationRequest userModificationRequest) {
+        notNull(userModificationRequest, "userCreationDto can not be null");
+        final String id = userModificationRequest.getId();
+        User existingUser = get(id);
 
-        final String name = userDto.getName();
-        final String userName = userDto.getUserName();
-        final String password = userDto.getPassword();
-        validate(name, userName, password);
+        final String name = userModificationRequest.getName();
+        final String userName = userModificationRequest.getUserName();
+        final String password = userModificationRequest.getPassword();
 
-        existingUser.setName(name);
-        existingUser.setUserName(userName);
-        existingUser.setPassword(password);
-        return userRepository.save(existingUser);
+        if (!name.isEmpty()){
+            existingUser.setName(name);
+            existingUser = userRepository.save(existingUser);
+        }
+        if (!userName.isEmpty() || !password.isEmpty()){
+            final APIUserDetail apiUserDetail = apiUserDetailRepository.findByUser_IdAndDeletedFalse(id);
+            if (!userName.isEmpty()) apiUserDetail.setUsername(userName);
+            if (!password.isEmpty()) apiUserDetail.setPasswordHash(password);
+            apiUserDetailRepository.save(apiUserDetail);
+        }
+        return existingUser;
     }
 
     @Override
-    public User getById(Long id) {
-        notNull(id, "user id can not be null");
+    public User get(String id) {
+        notNull(id, "user request id can not be null");
         final User user = userRepository.findById(id).orElse(null);
         if (user == null) throw new EntityNotFoundException();
         return user;
-    }
-
-    @Override
-    public User getByUserName(String userName) {
-        notEmpty(userName, "userName can not be empty");
-        if (!userRepository.existsByUserName(userName)) throw new EntityNotFoundException();
-        return userRepository.findByUserName(userName);
     }
 
     @Override
@@ -94,14 +106,8 @@ public class UserServiceImpl implements UserService {
         notEmpty(roleName, "role name can not be empty");
     }
 
-    private void validate(String name, String userName, String password){
-        notEmpty(name, "name can not be empty");
-        notEmpty(userName, "userName can not be empty");
-        notEmpty(password, "password can not be empty");
-    }
-
     @Override
-    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        return null;
+    public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
+        return apiUserDetailRepository.findByUsernameAndDeletedFalse(userName);
     }
 }
